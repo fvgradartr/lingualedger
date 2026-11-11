@@ -1,5 +1,7 @@
 # Architecture
 
+Repository: https://github.com/fvgradartr/lingualedger
+
 LinguaLedger is one Next.js app plus one Rust contract.
 
 ```

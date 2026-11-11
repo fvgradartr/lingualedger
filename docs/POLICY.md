@@ -1,5 +1,7 @@
 # Policy
 
+Repository: https://github.com/fvgradartr/lingualedger
+
 The owner account `lingualedger584b.testnet` can replace this with `set_policy`. The deployed value is the default from `new`.
 
 | Field | Value |

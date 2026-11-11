@@ -1,5 +1,7 @@
 # LinguaLedger
 
+Code: [github.com/fvgradartr/lingualedger](https://github.com/fvgradartr/lingualedger)
+
 LinguaLedger is a translation house with no employees. It sells Turkish, English, and Spanish jobs. A person sets the rules on NEAR testnet. The desk prices, translates, reviews, and records the split.
 
 - Agencies are slow and want a bank invoice.
@@ -31,17 +33,23 @@ Screenshots from a local run of the steps below:
 
 ## Try it in 2 minutes
 
-No install. From a clone that can run Node:
+Needs Node.js 22 or newer (tested on 22.23.4) and npm 10. No API keys, no NEAR account, and no Rust. The commands below are the whole setup.
 
 ```bash
+git clone https://github.com/fvgradartr/lingualedger
+cd lingualedger
 npm install
 cp .env.example .env.local
+npm test
+npm run demo
 npm run dev
 ```
 
-The app listens on [http://127.0.0.1:43123](http://127.0.0.1:43123). `NEAR_AI_API_KEY` can stay empty.
+`npm test` checks the quote floor, the 70/20/10 split, QA, the webhook signature, and the pause message. `npm run demo` prints one settled job: 0.05 NEAR, floored, a sha256, and three payout lines. Both finish without calling NEAR AI.
 
-1. Open `/`. The Turkish sample is already in the box (41 words). The slip shows **0.05 NEAR** and the badge **Floored at the minimum**. That floor is `min_price` on `lingualedger584b.testnet` (0.05 NEAR). The raw block price is 0.02 NEAR, so the floor wins.
+`npm run dev` listens on [http://127.0.0.1:43123](http://127.0.0.1:43123). Leave every key in `.env.local` empty. The contract id in that file is public. If you delete it, the app still uses `lingualedger584b.testnet` from `src/lib/config.ts`.
+
+1. Open [http://127.0.0.1:43123](http://127.0.0.1:43123). The Turkish sample is already in the box (41 words). The slip shows **0.05 NEAR** and the badge **Floored at the minimum**. The raw block price is 0.02 NEAR, so the floor wins. If testnet RPC answers, a second badge says **Price read on testnet**. If it does not, the same 0.05 NEAR floor is the built-in policy.
 2. Click **Pay the demo quote**. This does not send testnet NEAR.
 3. The job page walks Quote, Paid, Translating, QA, Delivered, Recorded, Settled. You get the English translation, QA 100, a sha256, and a TEE id that starts with `demo:`.
 4. Open `/ledger`. The job is there with its hash. The split is 70% operating reserve, 20% owner, 10% contributors (0.035 / 0.01 / 0.005 NEAR). The **On testnet** table includes `ll-smoke-mwc7net4` when the RPC answers.
@@ -58,17 +66,14 @@ near contract call-function as-transaction lingualedger584b.testnet set_paused \
 
 ## Run locally
 
+The judge path above is enough. These extra commands are optional.
+
 ```bash
-npm install
-cp .env.example .env.local
-npm test                 # quote, split, QA, webhook HMAC, pause
-npm run test:contract    # cargo test for the treasury
-npm run demo             # one full desk loop, prints the hash and the split
-npm run build
-npm run dev              # http://127.0.0.1:43123
+npm run build            # production build, no secrets required
+npm run test:contract    # cargo test. Needs Rust 1.95+ and the wasm32 target is only for deploy
 ```
 
-`npm run demo` finishes in a few seconds without an inference key. With `NEAR_AI_API_KEY` set, the same command calls NEAR AI Cloud and can take longer.
+With `NEAR_AI_API_KEY` set, `npm run demo` calls NEAR AI Cloud instead of the local sample translator. Without it, demo mode is the path that always runs.
 
 Contract-only:
 
@@ -82,18 +87,14 @@ bash scripts/deploy-testnet.sh lingualedger584b.testnet
 
 ## Deploy to Vercel
 
-Hobby is enough for the demo. Do not set `AGENT_FC_PRIVATE_KEY` or `OWNER_PRIVATE_KEY` on Vercel.
+Hobby, zero environment variables. The contract id defaults to `lingualedger584b.testnet` in `src/lib/config.ts`. The pause button stays available because it only closes when `DEMO_OPEN_KILL_SWITCH=0`. Do not set `AGENT_FC_PRIVATE_KEY` or `OWNER_PRIVATE_KEY` on Vercel. No `vercel.json` is required. The app is a Next.js project at the repository root.
 
 ```bash
 npx vercel link
-npx vercel env add NEXT_PUBLIC_CONTRACT_ID production
-# value: lingualedger584b.testnet
-npx vercel env add DEMO_OPEN_KILL_SWITCH production
-# value: 1
 npx vercel deploy --prod
 ```
 
-The code already defaults the contract id to `lingualedger584b.testnet`, so the env var is optional. Add `NEAR_AI_API_KEY` when the NEAR AI Cloud account exists. The desk keeps working without it.
+Optional later, not required for the demo: `NEAR_AI_API_KEY` (or `NEARAI_API_KEY`) turns on NEAR AI Cloud. The desk still translates without it.
 
 ## How NEAR is used
 
@@ -167,4 +168,4 @@ Honest list of what is real and what is a stand-in:
 
 All of this was written after the 2026-10-19 announcement, for the Autonomous Business track, with Agent Economy and Privacy as the other tracks.
 
-Libraries and AI assistance are listed in `AI_USAGE.md`. License: MIT (`LICENSE`).
+Libraries and AI assistance are listed in `AI_USAGE.md`. License: MIT (`LICENSE`). Repository: https://github.com/fvgradartr/lingualedger

@@ -1,5 +1,7 @@
 # Screenshots
 
+Repository: https://github.com/fvgradartr/lingualedger
+
 Captured from `npm run dev` at http://127.0.0.1:43123 with headless Chrome.
 
 - `desk.png` — Turkish sample, 0.05 NEAR, floored badge, price read on testnet.

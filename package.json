@@ -2,6 +2,19 @@
   "name": "lingualedger",
   "version": "0.1.0",
   "private": true,
+  "description": "Autonomous TR/EN/ES translation desk on NEAR testnet.",
+  "homepage": "https://github.com/fvgradartr/lingualedger",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fvgradartr/lingualedger.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fvgradartr/lingualedger/issues"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "next dev -p 43123",
     "build": "next build",

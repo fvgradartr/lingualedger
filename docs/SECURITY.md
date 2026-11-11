@@ -1,5 +1,7 @@
 # Security
 
+Repository: https://github.com/fvgradartr/lingualedger
+
 ## Keys
 
 The treasury account holds two kinds of key.

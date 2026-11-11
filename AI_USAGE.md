@@ -1,5 +1,7 @@
 # Libraries and AI assistance
 
+Repository: https://github.com/fvgradartr/lingualedger
+
 LinguaLedger was written with Cursor Grok 4.7 during NEAR Hackathon 2026. The human spec was followed, then renamed from the working title to LinguaLedger. Review the contract and the desk before relying on either.
 
 ## Libraries

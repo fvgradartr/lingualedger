@@ -1,5 +1,7 @@
 # Two-minute demo
 
+Repository: https://github.com/fvgradartr/lingualedger
+
 Record the local desk at `http://127.0.0.1:43123` after `npm run dev`. Leave `NEAR_AI_API_KEY` empty unless you want the TEE path, which needs the key and a longer wait.
 
 | Time | Shot | Say |

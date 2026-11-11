@@ -38,6 +38,12 @@ yarn-error.log*
 /data
 /contract/target
 
+# keys and local credentials. Never commit these.
+.near-credentials/
+**/*credentials*.json
+*.seed
+*.mnemonic
+
 # vercel
 .vercel
 
