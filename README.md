@@ -10,10 +10,14 @@ LinguaLedger is a translation house with no employees. It sells Turkish, English
 
 ## Live demo
 
+**[Open the desk](https://lingualedger.vercel.app)**
+
+Hosted on Vercel with zero environment variables. Inference on that site is **demo mode**: there is no `NEAR_AI_API_KEY`, so translations are the local sample engine, receipt ids start with `demo:`, and they are not TEE attestations. Set `NEAR_AI_API_KEY` on a deployment to call NEAR AI Cloud instead. The price floor is still read from the testnet contract.
+
 | | |
 |---|---|
-| Desk | Run locally (commands below). A public Vercel URL is not attached yet. |
-| Ledger | `/ledger` on that same server |
+| Desk | [https://lingualedger.vercel.app](https://lingualedger.vercel.app) |
+| Ledger | [https://lingualedger.vercel.app/ledger](https://lingualedger.vercel.app/ledger) |
 | Contract | [`lingualedger584b.testnet`](https://testnet.nearblocks.io/address/lingualedger584b.testnet) |
 | Settled testnet job | [`ll-smoke-mwc7net4`](https://testnet.nearblocks.io/txns/8YJUsbb2mNFiSYncuZtinaEK2xSXnhV1Lcu9cRamVto9) |
 | Agent Market | Not listed yet. The webhook and poll worker are in the repo. |
@@ -87,7 +91,7 @@ bash scripts/deploy-testnet.sh lingualedger584b.testnet
 
 ## Deploy to Vercel
 
-Hobby, zero environment variables. The contract id defaults to `lingualedger584b.testnet` in `src/lib/config.ts`. The pause button stays available because it only closes when `DEMO_OPEN_KILL_SWITCH=0`. Do not set `AGENT_FC_PRIVATE_KEY` or `OWNER_PRIVATE_KEY` on Vercel. No `vercel.json` is required. The app is a Next.js project at the repository root.
+The live site is already at [https://lingualedger.vercel.app](https://lingualedger.vercel.app) (Hobby, zero environment variables, demo inference). The contract id defaults to `lingualedger584b.testnet` in `src/lib/config.ts`. The pause button stays available because it only closes when `DEMO_OPEN_KILL_SWITCH=0`. Do not set `AGENT_FC_PRIVATE_KEY` or `OWNER_PRIVATE_KEY` on Vercel. No `vercel.json` is required. The app is a Next.js project at the repository root.
 
 ```bash
 npx vercel link
@@ -158,14 +162,16 @@ Honest list of what is real and what is a stand-in:
 
 - **Real on testnet:** the treasury, the policy, the function-call key limit, and one settled smoke job (`ll-smoke-mwc7net4`). Pay `9kTajDeCB93G1YT629yUJXpgSps3m1wDfo3evo4xvKrx`, record `91PA43z5uEYXYU5AYDkLZJcr457z51YUSwBLmhCkoWCp`, settle `8YJUsbb2mNFiSYncuZtinaEK2xSXnhV1Lcu9cRamVto9`.
 - **Demo pay** on the desk writes a local ledger (`data/ledger.json`, or memory plus a cookie on Vercel). It does not attach NEAR. Receipt ids start with `demo:`.
-- **Demo inference** runs when `NEAR_AI_API_KEY` is unset. The sample paragraph has a curated translation. Other text uses a small phrasebook, then a real QA pass (numbers, URLs, glossary). The TEE id is not an attestation. Set the key to call NEAR AI Cloud. The official JS SDK wants Node 24, so this app uses the HTTP API on Node 22.
+- **Demo inference** is what [lingualedger.vercel.app](https://lingualedger.vercel.app) runs, because that deployment has no `NEAR_AI_API_KEY`. The sample paragraph has a curated translation. Other text uses a small phrasebook, then a real QA pass (numbers, URLs, glossary). The TEE id is not an attestation. Set the key and the same code calls NEAR AI Cloud. The official JS SDK wants Node 24, so this app uses the HTTP API on Node 22.
 - **1Click** is dry-run only. There is no mainnet payment. Quotes under about 2 USDC are previewed as a 2 USDC exact output because that is a practical Intents size. The label says so.
 - **Agent Market** is not registered. The webhook treats the brief as data and will translate it in demo mode. Unsigned webhooks are refused in production unless `DEMO_OPEN_WEBHOOK=1`.
 - **No wallet in the browser.** The owner uses `near-cli`.
 - **Testnet only.** No mainnet funds.
 
-## Built during NEAR Hackathon
+## Hackathon
 
-All of this was written after the 2026-10-19 announcement, for the Autonomous Business track, with Agent Economy and Privacy as the other tracks.
+Built for **NEAR HACKATHON 2026**. Solo project.
 
-Libraries and AI assistance are listed in `AI_USAGE.md`. License: MIT (`LICENSE`). Repository: https://github.com/fvgradartr/lingualedger
+Tracks: Autonomous Business (primary), Agent Economy, and Privacy.
+
+All of this code was written after the 2026-10-19 announcement. Libraries and AI assistance are listed in `AI_USAGE.md`. License: MIT (`LICENSE`). Repository: https://github.com/fvgradartr/lingualedger
