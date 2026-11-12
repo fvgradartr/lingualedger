@@ -83,6 +83,8 @@ export function Desk() {
     return () => clearTimeout(handle);
   }, [text, source, target]);
 
+  const sponsoredPay = quote?.chainSettleEnabled ?? true;
+
   function addGlossary() {
     if (!draftSource.trim() || !draftTarget.trim()) return;
     setGlossary((current) => [...current, { source: draftSource.trim(), target: draftTarget.trim() }].slice(0, 12));
@@ -239,18 +241,18 @@ export function Desk() {
 
           <Tabs defaultValue="demo">
             <TabsList className="grid h-auto w-full grid-cols-2">
-              <TabsTrigger value="demo" className="h-9">{quote?.chainSettleEnabled ? "Sponsored testnet pay" : "Local demo pay"}</TabsTrigger>
+              <TabsTrigger value="demo" className="h-9">{sponsoredPay ? "Sponsored testnet pay" : "Local demo pay"}</TabsTrigger>
               <TabsTrigger value="any" className="h-9">Pay with any token</TabsTrigger>
             </TabsList>
             <TabsContent value="demo" className="space-y-3 pt-3">
               <p className="text-sm leading-relaxed text-muted-foreground">
-                {quote?.chainSettleEnabled
+                {sponsoredPay
                   ? "A shared guest account pays the quote in real testnet NEAR. You do not need a wallet. Translation uses a free public translator (not NEAR AI, and not a TEE). The 70/20/10 split actually transfers on testnet. This is testnet only — no real money. An hourly guest cap may apply."
                   : "This local path records the translation, QA, sha256 receipt, and the 70/20/10 split on this desk only. It does not move testnet NEAR. The live site, when keys are set, pays and settles on testnet."}
               </p>
               {quote?.policy.paused ? <p className="text-sm text-destructive">LinguaLedger is paused</p> : null}
               <Button className="h-11 w-full" disabled={!quote || paying || !quote.withinCap} onClick={pay}>
-                {paying ? (quote?.chainSettleEnabled ? "Translating and settling…" : "Translating…") : quote?.chainSettleEnabled ? "Pay on testnet" : "Pay the local quote"}
+                {paying ? (sponsoredPay ? "Translating and settling…" : "Translating…") : sponsoredPay ? "Pay on testnet" : "Pay the local quote"}
               </Button>
               {payError ? <p className="text-sm text-destructive">{payError}</p> : null}
             </TabsContent>

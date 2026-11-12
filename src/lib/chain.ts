@@ -166,6 +166,7 @@ function chainOrderToJob(row: ChainOrder): JobOrder {
     tx: { pay: null, record: null, settle: null },
     createdAt: created,
     onChain: true,
+    settledOnChain: status === "settled",
   };
 }
 
