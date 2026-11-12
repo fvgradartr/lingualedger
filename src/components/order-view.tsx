@@ -82,9 +82,16 @@ export function OrderView({ id, fresh }: { id: string; fresh: boolean }) {
             {order.sourceLang.toUpperCase()} → {order.targetLang.toUpperCase()}
           </h1>
         </div>
-        <Badge variant={order.receipt.mode === "near-ai" ? "default" : "secondary"}>
-          {order.receipt.mode === "near-ai" ? "NEAR AI Cloud" : "Demo inference"}
-        </Badge>
+        <div className="flex flex-wrap gap-2">
+          <Badge variant={order.receipt.mode === "near-ai" ? "default" : "secondary"}>
+            {order.receipt.mode === "near-ai" ? "NEAR AI Cloud" : "Public translator"}
+          </Badge>
+          {order.settledOnChain ? (
+            <Badge>Settled on testnet</Badge>
+          ) : (
+            <Badge variant="outline">Local receipt</Badge>
+          )}
+        </div>
       </div>
 
       <ol className="grid gap-2 sm:grid-cols-7">
@@ -119,7 +126,10 @@ export function OrderView({ id, fresh }: { id: string; fresh: boolean }) {
                 {order.qaNotes.map((note) => <li key={note}>{note}</li>)}
               </ul>
               <p className="font-mono text-xs break-all">sha256 {order.receipt.sha256 || "pending"}</p>
-              <p className="font-mono text-xs break-all">TEE {order.receipt.teeSigId || "pending"}</p>
+              <p className="font-mono text-xs break-all">Signature id {order.receipt.teeSigId || "pending"}</p>
+              {order.receipt.teeSigId?.startsWith("demo:") ? (
+                <p className="text-xs text-muted-foreground">Local id, not a TEE attestation.</p>
+              ) : null}
               <p className="text-muted-foreground">{order.receipt.verificationNote}</p>
               <p>Price {formatNear(parseYocto(order.amountYocto))} NEAR{order.floored ? " · floored" : ""}</p>
               <p>Model {order.receipt.model}</p>
@@ -133,7 +143,7 @@ export function OrderView({ id, fresh }: { id: string; fresh: boolean }) {
                   {order.payouts.map((payout) => (
                     <li key={payout.payee} className="flex justify-between gap-3">
                       <span>{payout.role} · {payout.bps / 100}%</span>
-                      <span className="font-mono">{formatNear(parseYocto(payout.amountYocto))}</span>
+                      <span className="font-mono">{formatNear(parseYocto(payout.amountYocto))}{payout.transferred ? " · sent" : ""}</span>
                     </li>
                   ))}
                 </ul>
@@ -155,7 +165,7 @@ function TxLine({ label, hash, href }: { label: string; hash: string | null; hre
     <p>
       {label}{" "}
       {href ? (
-        <a className="underline" href={href}>{hash}</a>
+        <a className="underline" href={href} target="_blank" rel="noreferrer">{hash}</a>
       ) : (
         <span>{hash}</span>
       )}

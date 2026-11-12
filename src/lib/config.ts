@@ -1,14 +1,18 @@
 export const APP_NAME = "LinguaLedger";
 
-/** Public testnet treasury. Override with NEAR_CONTRACT_ID or NEXT_PUBLIC_CONTRACT_ID. */
-export const KNOWN_CONTRACT_ID = "lingualedger584b.testnet";
+/** Public testnet treasury used by the live desk. Override with NEAR_CONTRACT_ID or NEXT_PUBLIC_CONTRACT_ID. */
+export const KNOWN_CONTRACT_ID = "lingualedger-hq.testnet";
+
+/** First treasury. It still holds the original smoke job. The live desk does not pay it. */
+export const LEGACY_CONTRACT_ID = "lingualedger584b.testnet";
 
 export const RPC_URL = process.env.NEAR_RPC_URL || "https://rpc.testnet.near.org";
 export const EXPLORER = "https://testnet.nearblocks.io";
 
-export const RESERVE_ACCOUNT = "reserve.lingualedger584b.testnet";
-export const OWNER_ACCOUNT = "lingualedger584b.testnet";
-export const CONTRIBUTORS_ACCOUNT = "contributors.lingualedger584b.testnet";
+export const RESERVE_ACCOUNT = "reserve.lingualedger-hq.testnet";
+export const OWNER_ACCOUNT = "lingualedger-hq.testnet";
+export const CONTRIBUTORS_ACCOUNT = "contributors.lingualedger-hq.testnet";
+export const GUEST_ACCOUNT = "guest.lingualedger-hq.testnet";
 
 export const ONECLICK_BASE = process.env.ONECLICK_BASE_URL || "https://1click.chaindefuser.com";
 export const NEAR_USDC_ASSET =

@@ -13,7 +13,7 @@ LinguaLedger was written with Cursor Grok 4.7 during NEAR Hackathon 2026. The hu
 - `near-cli-rs` 0.31.1 for the faucet and as the documented owner CLI
 - Node test runner via `tsx` for the desk tests
 
-No payment processor, database, or hosted key is required to run the demo.
+No payment processor, database, or paid API key is required to run the demo. The hosted desk uses a testnet guest key and a limited function-call key so a judge can settle a real testnet payment without a wallet.
 
 ## What the model wrote
 

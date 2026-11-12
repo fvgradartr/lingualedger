@@ -9,7 +9,7 @@ import { homedir } from "node:os";
 import path from "node:path";
 import { Account } from "near-api-js";
 
-const accountId = process.env.NEAR_CONTRACT_ID || "lingualedger584b.testnet";
+const accountId = process.env.NEAR_CONTRACT_ID || "lingualedger-hq.testnet";
 const rpc = process.env.NEAR_RPC_URL || "https://rpc.testnet.near.org";
 const file = path.join(homedir(), ".near-credentials/testnet", `${accountId}.json`);
 if (!existsSync(file) && !process.env.OWNER_PRIVATE_KEY) {

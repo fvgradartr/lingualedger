@@ -6,7 +6,7 @@ LinguaLedger is one Next.js app plus one Rust contract.
 
 ```
 Browser
-  /                 desk: paste, quote, demo pay, dry 1Click quote
+  /                 desk: paste, quote, sponsored testnet pay, dry 1Click quote
   /order/[id]       timeline, deliverable, receipt
   /ledger           policy, desk jobs, testnet jobs
         |
@@ -22,7 +22,7 @@ Route handlers
   /api/market/webhook
         |
         +-- data/ledger.json (or memory if the disk is read-only)
-        +-- testnet RPC views of lingualedger584b.testnet
+        +-- testnet RPC views and pay/record/settle calls on lingualedger-hq.testnet
         +-- NEAR AI Cloud, only if NEAR_AI_API_KEY is set
         +-- 1Click POST /v0/quote with dry: true
 ```

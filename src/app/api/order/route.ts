@@ -3,6 +3,8 @@ import { errorResponse, json } from "@/lib/http";
 import { createOrder } from "@/lib/pipeline";
 import type { Channel, Lang, Tone } from "@/lib/types";
 
+export const maxDuration = 60;
+
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as {
