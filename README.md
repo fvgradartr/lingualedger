@@ -12,7 +12,7 @@ LinguaLedger is a translation house with no employees. It sells Turkish, English
 
 **[Open the desk](https://lingualedger.vercel.app)**
 
-Hosted on Vercel with zero environment variables. Inference on that site is **demo mode**: there is no `NEAR_AI_API_KEY`, so translations are the local sample engine, receipt ids start with `demo:`, and they are not TEE attestations. Set `NEAR_AI_API_KEY` on a deployment to call NEAR AI Cloud instead. The price floor is still read from the testnet contract.
+Hosted on Vercel with zero environment variables and no paid API keys. If `NEAR_AI_API_KEY` is set, the desk calls NEAR AI Cloud. Otherwise a visitor's own Turkish, English, or Spanish text is translated by free public machine translation (MyMemory, then Wikimedia MinT, then a public Google endpoint as a last resort). The canned desk sample still uses the local curated translation, so `npm test` and `npm run demo` do not need the network. Receipt ids start with `demo:` and are not TEE attestations. The price floor is still read from the testnet contract.
 
 | | |
 |---|---|
@@ -77,7 +77,7 @@ npm run build            # production build, no secrets required
 npm run test:contract    # cargo test. Needs Rust 1.95+ and the wasm32 target is only for deploy
 ```
 
-With `NEAR_AI_API_KEY` set, `npm run demo` calls NEAR AI Cloud instead of the local sample translator. Without it, demo mode is the path that always runs.
+With `NEAR_AI_API_KEY` set, `npm run demo` calls NEAR AI Cloud. Without it, the canned sample uses the local curated translator; any other text uses the free public translators above. If every public translator fails, the desk returns an error instead of a word-swap that leaves the source untranslated.
 
 Contract-only:
 
@@ -162,7 +162,7 @@ Honest list of what is real and what is a stand-in:
 
 - **Real on testnet:** the treasury, the policy, the function-call key limit, and one settled smoke job (`ll-smoke-mwc7net4`). Pay `9kTajDeCB93G1YT629yUJXpgSps3m1wDfo3evo4xvKrx`, record `91PA43z5uEYXYU5AYDkLZJcr457z51YUSwBLmhCkoWCp`, settle `8YJUsbb2mNFiSYncuZtinaEK2xSXnhV1Lcu9cRamVto9`.
 - **Demo pay** on the desk writes a local ledger (`data/ledger.json`, or memory plus a cookie on Vercel). It does not attach NEAR. Receipt ids start with `demo:`.
-- **Demo inference** is what [lingualedger.vercel.app](https://lingualedger.vercel.app) runs, because that deployment has no `NEAR_AI_API_KEY`. The sample paragraph has a curated translation. Other text uses a small phrasebook, then a real QA pass (numbers, URLs, glossary). The TEE id is not an attestation. Set the key and the same code calls NEAR AI Cloud. The official JS SDK wants Node 24, so this app uses the HTTP API on Node 22.
+- **Demo inference** is what [lingualedger.vercel.app](https://lingualedger.vercel.app) runs, because that deployment has no `NEAR_AI_API_KEY`. The sample paragraph has a curated translation. Other text is translated by free public machine-translation APIs (MyMemory, then Wikimedia MinT, then a public Google endpoint). If every public translator fails, the desk returns an error instead of leaving the source untranslated. QA still checks numbers, URLs, and the glossary, and a copy of the source scores poorly. The TEE id is not an attestation. Set the key and the same code calls NEAR AI Cloud. The official JS SDK wants Node 24, so this app uses the HTTP API on Node 22.
 - **1Click** is dry-run only. There is no mainnet payment. Quotes under about 2 USDC are previewed as a 2 USDC exact output because that is a practical Intents size. The label says so.
 - **Agent Market** is not registered. The webhook treats the brief as data and will translate it in demo mode. Unsigned webhooks are refused in production unless `DEMO_OPEN_WEBHOOK=1`.
 - **No wallet in the browser.** The owner uses `near-cli`.
