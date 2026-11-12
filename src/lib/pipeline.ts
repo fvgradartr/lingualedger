@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from "node:crypto";
 import { readPolicy } from "@/lib/chain";
-import { MAX_CHARS, MAX_WORDS } from "@/lib/config";
+import { MAX_CHARS, MAX_WORDS, nearAiConfigured } from "@/lib/config";
 import {
   allocateSplit,
   countWords,
@@ -78,6 +78,7 @@ export async function buildQuote(text: string, source: Lang, target: Lang): Prom
     policy,
     detectedLang: detectLanguage(text),
     chainSettleEnabled: chainSettleConfigured(),
+    nearAiConfigured: nearAiConfigured(),
   };
 }
 

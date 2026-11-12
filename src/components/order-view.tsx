@@ -86,6 +86,13 @@ export function OrderView({ id, fresh }: { id: string; fresh: boolean }) {
           <Badge variant={order.receipt.mode === "near-ai" ? "default" : "secondary"}>
             {order.receipt.mode === "near-ai" ? "NEAR AI Cloud" : "Public translator"}
           </Badge>
+          {order.receipt.mode === "near-ai" ? (
+            order.receipt.verified ? (
+              <Badge>TEE signature verified</Badge>
+            ) : (
+              <Badge variant="outline">NEAR AI, not TEE-verified</Badge>
+            )
+          ) : null}
           {order.settledOnChain ? (
             <Badge>Settled on testnet</Badge>
           ) : (
@@ -129,6 +136,10 @@ export function OrderView({ id, fresh }: { id: string; fresh: boolean }) {
               <p className="font-mono text-xs break-all">Signature id {order.receipt.teeSigId || "pending"}</p>
               {order.receipt.teeSigId?.startsWith("demo:") ? (
                 <p className="text-xs text-muted-foreground">Local id, not a TEE attestation.</p>
+              ) : order.receipt.mode === "near-ai" && order.receipt.verified ? (
+                <p className="text-xs text-muted-foreground">Chat id from NEAR AI Cloud. The TEE signature on this receipt verified against the attested signing address.</p>
+              ) : order.receipt.mode === "near-ai" ? (
+                <p className="text-xs text-muted-foreground">Chat id from NEAR AI Cloud. The TEE signature was not verified for this receipt.</p>
               ) : null}
               <p className="text-muted-foreground">{order.receipt.verificationNote}</p>
               <p>Price {formatNear(parseYocto(order.amountYocto))} NEAR{order.floored ? " · floored" : ""}</p>

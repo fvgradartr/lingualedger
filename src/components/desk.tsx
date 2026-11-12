@@ -247,7 +247,9 @@ export function Desk() {
             <TabsContent value="demo" className="space-y-3 pt-3">
               <p className="text-sm leading-relaxed text-muted-foreground">
                 {sponsoredPay
-                  ? "A shared guest account pays the quote in real testnet NEAR. You do not need a wallet. Translation uses a free public translator (not NEAR AI, and not a TEE). The 70/20/10 split actually transfers on testnet. This is testnet only — no real money. An hourly guest cap may apply."
+                  ? quote?.nearAiConfigured
+                    ? "A shared guest account pays the quote in real testnet NEAR. You do not need a wallet. Translation uses NEAR AI Cloud when that call succeeds (private inference; a receipt is marked verified only if the response signature matches the attested TEE key). If the NEAR AI call fails, a free public translator is the fallback. The 70/20/10 split actually transfers on testnet. This is testnet only — no real money. An hourly guest cap may apply."
+                    : "A shared guest account pays the quote in real testnet NEAR. You do not need a wallet. Translation uses a free public translator (not NEAR AI, and not a TEE). The 70/20/10 split actually transfers on testnet. This is testnet only — no real money. An hourly guest cap may apply."
                   : "This local path records the translation, QA, sha256 receipt, and the 70/20/10 split on this desk only. It does not move testnet NEAR. The live site, when keys are set, pays and settles on testnet."}
               </p>
               {quote?.policy.paused ? <p className="text-sm text-destructive">LinguaLedger is paused</p> : null}
@@ -293,7 +295,9 @@ export function Desk() {
       <section className="grid gap-3 sm:grid-cols-3 lg:col-span-2">
         {[
           ["1", "Price", "A started block of 100 words, then the on-chain minimum. The agent cannot discount past it."],
-          ["2", "Work", "A free public translator on the live desk (MyMemory, then MinT, then a public Google endpoint). This is not NEAR AI and not a TEE. A NEAR AI key would switch that path on. QA is local."],
+          ["2", "Work", quote?.nearAiConfigured
+            ? "NEAR AI Cloud translates custom text when the call succeeds. A receipt is marked TEE-verified only after the response signature checks against the attested signing address. If that call fails, the desk falls back to a free public translator (MyMemory, then MinT, then a public Google endpoint). QA is local."
+            : "A free public translator on the live desk (MyMemory, then MinT, then a public Google endpoint). This is not NEAR AI and not a TEE. A NEAR AI key would switch that path on. QA is local."],
           ["3", "Books", "A sponsored guest pays the quote in testnet NEAR. The agent records the hash and settles 70/20/10 on chain. Explorer links are on the receipt. Testnet only."],
         ].map(([step, title, body]) => (
           <div key={step} className="rounded-xl border border-border bg-card/80 p-4">

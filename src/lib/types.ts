@@ -91,6 +91,7 @@ export interface QuoteResponse {
   policy: Policy;
   detectedLang: Lang | "unknown";
   chainSettleEnabled: boolean;
+  nearAiConfigured: boolean;
 }
 
 export const LANG_LABEL: Record<Lang, string> = {

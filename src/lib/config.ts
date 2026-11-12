@@ -38,3 +38,10 @@ export function modelUsdPerMillion(): number {
   const parsed = Number(process.env.MODEL_USD_PER_MILLION || "0.15");
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0.15;
 }
+
+/** True when a NEAR AI Cloud key is present. Does not mean the account has credits or that a call will succeed. */
+export function nearAiConfigured(): boolean {
+  const key = (process.env.NEAR_AI_API_KEY || process.env.NEARAI_API_KEY || "").trim();
+  return key.length > 0;
+}
+

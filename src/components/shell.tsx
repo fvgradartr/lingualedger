@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { KNOWN_CONTRACT_ID } from "@/lib/config";
+import { KNOWN_CONTRACT_ID, nearAiConfigured } from "@/lib/config";
 
 export function Shell({ children }: { children: React.ReactNode }) {
   return (
@@ -30,8 +30,11 @@ export function Shell({ children }: { children: React.ReactNode }) {
       </header>
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6">{children}</main>
       <footer className="border-t border-border/80 px-4 py-6 text-center text-xs text-muted-foreground sm:px-6">
-        Built during NEAR Hackathon 2026. Testnet only. A sponsored guest pays real testnet NEAR. Translation uses
-        a free public translator unless <span className="font-mono">NEAR_AI_API_KEY</span> is set. 1Click quotes are a dry run.
+        Built during NEAR Hackathon 2026. Testnet only. A sponsored guest pays real testnet NEAR.{" "}
+        {nearAiConfigured()
+          ? "Translation uses NEAR AI Cloud when the call succeeds, with a free public translator as fallback. A receipt is TEE-verified only when the response signature matches the attested key."
+          : "Translation uses a free public translator (not NEAR AI, and not a TEE)."}{" "}
+        1Click quotes are a dry run.
       </footer>
     </div>
   );
