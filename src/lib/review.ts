@@ -51,6 +51,12 @@ export function reviewTranslation(source: string, translation: string, glossary:
     notes.push("Length is far from the source.");
   }
 
+  const norm = (value: string) => value.trim().replace(/\s+/g, " ").toLocaleLowerCase("en");
+  if (norm(source) === norm(translated)) {
+    score -= 80;
+    notes.push("Translation matches the source text.");
+  }
+
   return { score: Math.max(0, score), notes };
 }
 

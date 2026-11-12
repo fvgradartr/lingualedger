@@ -17,4 +17,4 @@ No payment processor, database, or hosted key is required to run the demo.
 
 ## What the model wrote
 
-The treasury, the Next.js desk, the demo translator, the 1Click dry-quote client, the tests, and these docs. The curated Turkish, English, and Spanish sample sentences were written for the demo so the no-key path still shows a real translation of that paragraph.
+The treasury, the Next.js desk, the demo translator, the 1Click dry-quote client, the tests, and these docs. The curated Turkish, English, and Spanish sample sentences were written for the demo so the no-key path still shows a real translation of that paragraph. Arbitrary text on the live demo, when NEAR AI Cloud is not configured, is translated by free public machine-translation APIs (MyMemory and Wikimedia MinT), not a paid key.

@@ -285,3 +285,200 @@ export async function translateWithNearAi(input: {
       : "NEAR AI Cloud did not return a response id.",
   };
 }
+
+export function looksUntranslated(source: string, translation: string): boolean {
+  const normalize = (value: string) => value.trim().replace(/\s+/g, " ").toLocaleLowerCase("en");
+  const left = normalize(source);
+  const right = normalize(translation);
+  if (!right) return true;
+  if (left === right) return true;
+  const words = (value: string) => value.split(/[^\p{L}\p{N}]+/u).filter((word) => word.length > 2);
+  const sourceWords = words(left);
+  if (sourceWords.length === 0) return false;
+  const targetWords = new Set(words(right));
+  const overlap = sourceWords.filter((word) => targetWords.has(word)).length;
+  return overlap / sourceWords.length >= 0.85;
+}
+
+type Fetcher = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
+
+function byteLength(text: string): number {
+  return new TextEncoder().encode(text).length;
+}
+
+function chunksForLimit(text: string, maxBytes: number): string[] {
+  const trimmed = text.trim();
+  if (!trimmed) return [];
+  if (byteLength(trimmed) <= maxBytes) return [trimmed];
+  const parts: string[] = [];
+  const flush = (buffer: string) => {
+    const value = buffer.trim();
+    if (value) parts.push(value);
+  };
+  let current = "";
+  const take = (piece: string) => {
+    if (!piece) return;
+    if (byteLength(piece) <= maxBytes) {
+      const joined = current ? `${current} ${piece}` : piece;
+      if (byteLength(joined) <= maxBytes) {
+        current = joined;
+        return;
+      }
+      flush(current);
+      current = piece;
+      return;
+    }
+    flush(current);
+    current = "";
+    const words = piece.split(/\s+/);
+    let buffer = "";
+    for (const word of words) {
+      const next = buffer ? `${buffer} ${word}` : word;
+      if (byteLength(next) <= maxBytes) {
+        buffer = next;
+        continue;
+      }
+      flush(buffer);
+      if (byteLength(word) <= maxBytes) {
+        buffer = word;
+        continue;
+      }
+      const encoded = new TextEncoder().encode(word);
+      for (let offset = 0; offset < encoded.length; offset += maxBytes) {
+        flush(new TextDecoder().decode(encoded.slice(offset, offset + maxBytes)));
+      }
+      buffer = "";
+    }
+    current = buffer;
+  };
+  for (const sentence of trimmed.split(/(?<=[.!?…])(?:\s+|$)/u)) {
+    take(sentence.trim());
+  }
+  flush(current);
+  return parts;
+}
+
+function warned(text: string): boolean {
+  return /MYMEMORY WARNING|QUERY LENGTH LIMITS|INVALID LANGUAGE/i.test(text);
+}
+
+async function fromMyMemory(text: string, source: Lang, target: Lang, fetcher: Fetcher): Promise<string> {
+  const pieces: string[] = [];
+  for (const chunk of chunksForLimit(text, 450)) {
+    const url = new URL("https://api.mymemory.translated.net/get");
+    url.searchParams.set("q", chunk);
+    url.searchParams.set("langpair", `${source}|${target}`);
+    url.searchParams.set("de", "lingualedger-demo@mail.grokbot.com");
+    const response = await fetcher(url, {
+      signal: AbortSignal.timeout(6_000),
+      headers: { accept: "application/json" },
+    });
+    if (!response.ok) throw new Error(`MyMemory returned ${response.status}`);
+    const payload = (await response.json()) as {
+      responseData?: { translatedText?: string };
+      responseStatus?: number | string;
+      quotaFinished?: boolean;
+      responseDetails?: string;
+    };
+    const translated = payload.responseData?.translatedText?.trim() ?? "";
+    if (payload.quotaFinished || warned(translated) || warned(String(payload.responseDetails ?? ""))) {
+      throw new Error("MyMemory quota or warning");
+    }
+    const status = Number(payload.responseStatus);
+    if (status && status !== 200) throw new Error(`MyMemory status ${status}`);
+    if (!translated) throw new Error("MyMemory empty");
+    pieces.push(translated);
+  }
+  return pieces.join(" ");
+}
+
+async function fromMint(text: string, source: Lang, target: Lang, fetcher: Fetcher): Promise<string> {
+  const pieces: string[] = [];
+  for (const chunk of chunksForLimit(text, 4_000)) {
+    const response = await fetcher("https://translate.wmcloud.org/api/translate", {
+      method: "POST",
+      headers: { "content-type": "application/json", accept: "application/json" },
+      body: JSON.stringify({
+        format: "text",
+        content: chunk,
+        source_language: source,
+        target_language: target,
+      }),
+      signal: AbortSignal.timeout(8_000),
+    });
+    if (!response.ok) throw new Error(`MinT returned ${response.status}`);
+    const payload = (await response.json()) as { translation?: string };
+    const translated = payload.translation?.trim() ?? "";
+    if (!translated) throw new Error("MinT empty");
+    pieces.push(translated);
+  }
+  return pieces.join(" ");
+}
+
+async function fromGtx(text: string, source: Lang, target: Lang, fetcher: Fetcher): Promise<string> {
+  const pieces: string[] = [];
+  for (const chunk of chunksForLimit(text, 4_000)) {
+    const url = new URL("https://translate.googleapis.com/translate_a/single");
+    url.searchParams.set("client", "gtx");
+    url.searchParams.set("sl", source);
+    url.searchParams.set("tl", target);
+    url.searchParams.set("dt", "t");
+    url.searchParams.set("q", chunk);
+    const response = await fetcher(url, {
+      signal: AbortSignal.timeout(5_000),
+      headers: { accept: "application/json" },
+    });
+    if (!response.ok) throw new Error(`GTX returned ${response.status}`);
+    const payload = (await response.json()) as unknown;
+    if (!Array.isArray(payload) || !Array.isArray(payload[0])) throw new Error("GTX shape");
+    const translated = (payload[0] as unknown[])
+      .map((row) => (Array.isArray(row) ? String(row[0] ?? "") : ""))
+      .join("")
+      .trim();
+    if (!translated) throw new Error("GTX empty");
+    pieces.push(translated);
+  }
+  return pieces.join(" ");
+}
+
+const PUBLIC_TRANSLATORS: { name: string; run: (text: string, source: Lang, target: Lang, fetcher: Fetcher) => Promise<string> }[] = [
+  { name: "mymemory-public", run: fromMyMemory },
+  { name: "wikimedia-mint", run: fromMint },
+  { name: "gtx-public", run: fromGtx },
+];
+
+export async function translateWithFreeMt(
+  input: {
+    text: string;
+    source: Lang;
+    target: Lang;
+    glossary: GlossaryPair[];
+    tone: Tone;
+  },
+  fetcher: Fetcher = fetch,
+): Promise<TranslationDraft | null> {
+  for (const provider of PUBLIC_TRANSLATORS) {
+    try {
+      const raw = await provider.run(input.text, input.source, input.target, fetcher);
+      if (!raw || looksUntranslated(input.text, raw)) continue;
+      let text = applyGlossary(raw, input.glossary);
+      let review = reviewTranslation(input.text, text, input.glossary);
+      let retried = false;
+      if (review.score < 70) {
+        retried = true;
+        text = ensureGlossary(restoreMissingNumbers(input.text, applyGlossary(raw, input.glossary)), input.glossary);
+        review = reviewTranslation(input.text, text, input.glossary);
+      }
+      return {
+        text: text.trim(),
+        retried,
+        review,
+        mode: "demo",
+        model: provider.name,
+      };
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}

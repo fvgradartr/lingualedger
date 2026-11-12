@@ -11,7 +11,8 @@ import {
   quoteParts,
 } from "@/lib/pricing";
 import { addDaySpend, currentDaySpend, isPaused, upsertOrder } from "@/lib/store";
-import { detectLanguage, translateDemo, translateWithNearAi } from "@/lib/translate";
+import { curatedTranslation } from "@/lib/samples";
+import { detectLanguage, looksUntranslated, translateDemo, translateWithFreeMt, translateWithNearAi } from "@/lib/translate";
 import type { Channel, GlossaryPair, JobOrder, Lang, QuoteResponse, Tone } from "@/lib/types";
 
 export class LedgerError extends Error {
@@ -117,23 +118,24 @@ export async function createOrder(input: {
   if (quote.policy.paused) throw new LedgerError("LinguaLedger is paused", 409);
   if (!quote.withinCap) throw new LedgerError("This job would pass the daily inference cap.", 409);
 
-  const near = await translateWithNearAi({
-    text: input.text,
-    source: input.source,
-    target: input.target,
-    glossary,
-    tone,
-  }).catch(() => null);
-  const draft = near ?? translateDemo({ text: input.text, source: input.source, target: input.target, glossary, tone });
-  if (!draft.text.trim()) throw new LedgerError("The translation came back empty.");
+  const brief = { text: input.text, source: input.source, target: input.target, glossary, tone };
+  const near = await translateWithNearAi(brief).catch(() => null);
+  const nearUsable = Boolean(near?.text.trim()) && !looksUntranslated(input.text, near!.text);
+  const curated = curatedTranslation(input.text, input.source, input.target);
+  const free = nearUsable || curated ? null : await translateWithFreeMt(brief).catch(() => null);
+  const freeUsable = Boolean(free?.text.trim()) && !looksUntranslated(input.text, free!.text);
+  const draft = nearUsable ? near! : curated ? translateDemo(brief) : freeUsable ? free! : null;
+  if (!draft?.text.trim()) {
+    throw new LedgerError("The translation service did not return a usable translation.", 502);
+  }
 
   const sha256 = createHash("sha256").update(draft.text).digest("hex");
   const inference = parseYocto(quote.inferenceCostYocto);
   const amount = parseYocto(quote.quoteYocto);
   const parts = allocateSplit(amount, quote.policy.split.map((share) => share.bps));
   const id = newOrderId();
-  const mode = near ? "near-ai" : "demo";
-  const teeSigId = near ? near.teeSigId : `demo:${sha256.slice(0, 16)}`;
+  const mode = draft.mode;
+  const teeSigId = mode === "near-ai" && near ? near.teeSigId : `demo:${sha256.slice(0, 16)}`;
 
   const order: JobOrder = {
     id,
@@ -162,12 +164,15 @@ export async function createOrder(input: {
       model: draft.model,
       mode,
       inferenceCostYocto: quote.inferenceCostYocto,
-      promptTokens: near?.promptTokens ?? Math.ceil(quote.words * 1.3),
-      completionTokens: near?.completionTokens ?? Math.ceil(draft.text.split(/\s+/).length * 1.3),
-      verified: near?.verified ?? false,
-      verificationNote: near
-        ? near.verificationNote
-        : "Demo mode. NEAR_AI_API_KEY is unset, so this signature id is local and not a TEE attestation.",
+      promptTokens: mode === "near-ai" && near ? near.promptTokens : Math.ceil(quote.words * 1.3),
+      completionTokens: mode === "near-ai" && near ? near.completionTokens : Math.ceil(draft.text.split(/\s+/).length * 1.3),
+      verified: mode === "near-ai" && near ? near.verified : false,
+      verificationNote:
+        mode === "near-ai" && near
+          ? near.verificationNote
+          : draft.model.startsWith("lingualedger-demo")
+            ? "Demo mode. This is a local sample translation. The signature id is local and not a TEE attestation."
+            : `Demo mode used the free public translator ${draft.model}. This is not a NEAR AI call, and the signature id is local, not a TEE attestation.`,
     },
     payouts: quote.policy.split.map((share, index) => ({
       payee: share.account,

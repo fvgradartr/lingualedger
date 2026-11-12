@@ -45,3 +45,9 @@ test("detects the sample as Turkish", () => {
   assert.equal(detectLanguage(SAMPLE_TR), "tr");
   assert.equal(detectLanguage(SAMPLE_EN), "en");
 });
+
+test("review flags a translation that copies the source", () => {
+  const review = reviewTranslation("Merhaba, bugün hava çok güzel.", "Merhaba, bugün hava çok güzel.", []);
+  assert.ok(review.score < 70);
+  assert.match(review.notes.join(" "), /matches the source/);
+});
