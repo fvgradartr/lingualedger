@@ -30,8 +30,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
       </header>
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6">{children}</main>
       <footer className="border-t border-border/80 px-4 py-6 text-center text-xs text-muted-foreground sm:px-6">
-        Built during NEAR Hackathon 2026. Testnet only. Dry 1Click quotes do not move funds. Demo inference runs
-        until <span className="font-mono">NEAR_AI_API_KEY</span> is set.
+        Built during NEAR Hackathon 2026. Testnet only. A sponsored guest pays real testnet NEAR. Translation uses
+        a free public translator unless <span className="font-mono">NEAR_AI_API_KEY</span> is set. 1Click quotes are a dry run.
       </footer>
     </div>
   );

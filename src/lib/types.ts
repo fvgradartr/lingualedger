@@ -73,6 +73,7 @@ export interface JobOrder {
   createdAt: string;
   seed?: boolean;
   onChain?: boolean;
+  settledOnChain?: boolean;
 }
 
 export interface QuoteResponse {
@@ -89,6 +90,7 @@ export interface QuoteResponse {
   daySpendYocto: string;
   policy: Policy;
   detectedLang: Lang | "unknown";
+  chainSettleEnabled: boolean;
 }
 
 export const LANG_LABEL: Record<Lang, string> = {

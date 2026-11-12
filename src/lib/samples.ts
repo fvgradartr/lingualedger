@@ -2,13 +2,13 @@ import type { Lang } from "@/lib/types";
 
 /** Canonical desk sample. 41 words. The quote floors at the on-chain minimum. */
 export const SAMPLE_TR =
-  "LinguaLedger 12 Kasım 2026'da İstanbul'da üç dilde açılıyor. Küçük ekipler ve yapay zekâ ajanları artık Türkçe, İngilizce ve İspanyolca metinlerini banka faturası beklemeden çevirebilir. 100 kelime 0,02 NEAR; asgari fiyat zincirde kilitli. Her teslimat TEE imzası ve sha256 makbuzu ile gelir.";
+  "LinguaLedger 12 Kasım 2026'da İstanbul'da üç dilde açılıyor. Küçük ekipler ve yapay zekâ ajanları artık Türkçe, İngilizce ve İspanyolca metinlerini banka faturası beklemeden çevirebilir. 100 kelime 0,02 NEAR; asgari fiyat zincirde kilitli. Her teslimat zincirde görülen bir sha256 makbuzu ile gelir.";
 
 export const SAMPLE_EN =
-  "LinguaLedger opens in three languages in Istanbul on 12 November 2026. Small teams and AI agents can now translate Turkish, English, and Spanish texts without waiting for a bank invoice. 100 words cost 0.02 NEAR; the minimum price is locked on chain. Every delivery comes with a TEE signature and a sha256 receipt.";
+  "LinguaLedger opens in three languages in Istanbul on 12 November 2026. Small teams and AI agents can now translate Turkish, English, and Spanish texts without waiting for a bank invoice. 100 words cost 0.02 NEAR; the minimum price is locked on chain. Every delivery comes with a sha256 receipt you can check on chain.";
 
 export const SAMPLE_ES =
-  "LinguaLedger abre en tres idiomas en Estambul el 12 de noviembre de 2026. Los equipos pequeños y los agentes de IA ya pueden traducir textos en turco, inglés y español sin esperar una factura bancaria. 100 palabras cuestan 0,02 NEAR; el precio mínimo está fijado en la cadena. Cada entrega llega con una firma TEE y un recibo sha256.";
+  "LinguaLedger abre en tres idiomas en Estambul el 12 de noviembre de 2026. Los equipos pequeños y los agentes de IA ya pueden traducir textos en turco, inglés y español sin esperar una factura bancaria. 100 palabras cuestan 0,02 NEAR; el precio mínimo está fijado en la cadena. Cada entrega llega con un recibo sha256 que se puede ver en la cadena.";
 
 const PAIRS: Record<string, string> = {
   "tr>en": SAMPLE_EN,

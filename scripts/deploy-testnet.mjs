@@ -15,7 +15,7 @@ import { Account, KeyPairEd25519, actions } from "near-api-js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const rpc = process.env.NEAR_RPC_URL || "https://rpc.testnet.near.org";
-const accountId = process.argv[2] || process.env.NEAR_CONTRACT_ID || "lingualedger584b.testnet";
+const accountId = process.argv[2] || process.env.NEAR_CONTRACT_ID || "lingualedger-hq.testnet";
 const wasmPath =
   process.env.WASM_PATH ||
   path.join(root, "contract/target/wasm32-unknown-unknown/release/lingualedger_treasury.wasm");
@@ -46,7 +46,7 @@ async function exists(id) {
   }
 }
 
-async function ensureSub(parent, prefix) {
+async function ensureSub(parent, prefix, nearToTransfer = 200_000_000_000_000_000_000_000n) {
   const id = `${prefix}.${accountId}`;
   if (await exists(id)) {
     console.log(`account ${id} already exists`);
@@ -57,7 +57,7 @@ async function ensureSub(parent, prefix) {
   await parent.createSubAccount({
     accountOrPrefix: prefix,
     publicKey: key.getPublicKey().toString(),
-    nearToTransfer: 200_000_000_000_000_000_000_000n,
+    nearToTransfer,
   });
   const dir = path.join(homedir(), ".near-credentials/testnet");
   mkdirSync(dir, { recursive: true });
@@ -101,6 +101,7 @@ async function main() {
   const parent = owner();
   const reserve = await ensureSub(parent, "reserve");
   const contributors = await ensureSub(parent, "contributors");
+  const guest = await ensureSub(parent, "guest", 2_000_000_000_000_000_000_000_000n);
   const wasm = new Uint8Array(readFileSync(wasmPath));
   const policy = await viewPolicy();
   const deployActions = [actions.deployContract(wasm)];
@@ -133,11 +134,11 @@ async function main() {
   await parent.addFunctionCallAccessKey({
     publicKey: agentKey.getPublicKey().toString(),
     contractId: accountId,
-    methodNames: ["record_sale", "request_spend", "settle"],
+    methodNames: ["record_sale", "settle"],
     allowance: 2_000_000_000_000_000_000_000_000n,
   });
   console.log(`agent function-call key ${agentKey.getPublicKey().toString()}`);
-  console.log("methods: record_sale, request_spend, settle");
+  console.log("methods: record_sale, settle");
 
   const envPath = path.join(root, ".env.local");
   const lines = [
@@ -147,11 +148,18 @@ async function main() {
     `NEAR_NETWORK_ID=testnet`,
     `AGENT_FC_ACCOUNT_ID=${accountId}`,
     `AGENT_FC_PRIVATE_KEY=${agentKey.toString()}`,
+    `DEMO_PAYER_ACCOUNT_ID=${guest}`,
+    `DEMO_MAX_SETTLEMENTS_PER_HOUR=12`,
     `DEMO_OPEN_KILL_SWITCH=1`,
     "",
   ];
+  const guestCredFile = path.join(homedir(), ".near-credentials/testnet", `${guest}.json`);
+  if (existsSync(guestCredFile)) {
+    const guestCred = JSON.parse(readFileSync(guestCredFile, "utf8"));
+    if (guestCred.private_key) lines.splice(lines.length - 1, 0, `DEMO_PAYER_PRIVATE_KEY=${guestCred.private_key}`);
+  }
   writeFileSync(envPath, lines.join("\n"));
-  console.log("wrote .env.local (gitignored). It holds the agent function-call key, not the owner key.");
+  console.log("wrote .env.local (gitignored). It holds the agent function-call key and the guest payer key, not the owner key.");
 
   const live = await viewPolicy();
   if (!live) throw new Error("get_policy did not return after deploy");

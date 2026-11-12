@@ -239,16 +239,18 @@ export function Desk() {
 
           <Tabs defaultValue="demo">
             <TabsList className="grid h-auto w-full grid-cols-2">
-              <TabsTrigger value="demo" className="h-9">Testnet demo pay</TabsTrigger>
+              <TabsTrigger value="demo" className="h-9">{quote?.chainSettleEnabled ? "Sponsored testnet pay" : "Local demo pay"}</TabsTrigger>
               <TabsTrigger value="any" className="h-9">Pay with any token</TabsTrigger>
             </TabsList>
             <TabsContent value="demo" className="space-y-3 pt-3">
               <p className="text-sm leading-relaxed text-muted-foreground">
-                Demo pay records the job on this desk: translation, QA, sha256 receipt, and the 70/20/10 split. It does not spend testnet NEAR. The public contract still holds the live price floor.
+                {quote?.chainSettleEnabled
+                  ? "A shared guest account pays the quote in real testnet NEAR. You do not need a wallet. Translation uses a free public translator (not NEAR AI, and not a TEE). The 70/20/10 split actually transfers on testnet. This is testnet only — no real money. An hourly guest cap may apply."
+                  : "This local path records the translation, QA, sha256 receipt, and the 70/20/10 split on this desk only. It does not move testnet NEAR. The live site, when keys are set, pays and settles on testnet."}
               </p>
               {quote?.policy.paused ? <p className="text-sm text-destructive">LinguaLedger is paused</p> : null}
               <Button className="h-11 w-full" disabled={!quote || paying || !quote.withinCap} onClick={pay}>
-                {paying ? "Translating…" : "Pay the demo quote"}
+                {paying ? (quote?.chainSettleEnabled ? "Translating and settling…" : "Translating…") : quote?.chainSettleEnabled ? "Pay on testnet" : "Pay the local quote"}
               </Button>
               {payError ? <p className="text-sm text-destructive">{payError}</p> : null}
             </TabsContent>
@@ -289,8 +291,8 @@ export function Desk() {
       <section className="grid gap-3 sm:grid-cols-3 lg:col-span-2">
         {[
           ["1", "Price", "A started block of 100 words, then the on-chain minimum. The agent cannot discount past it."],
-          ["2", "Work", "NEAR AI Cloud when a key is set. Otherwise a labeled demo translator, plus a local QA pass."],
-          ["3", "Books", "70% reserve, 20% owner, 10% contributors. The public ledger shows the hash, not the source text."],
+          ["2", "Work", "A free public translator on the live desk (MyMemory, then MinT, then a public Google endpoint). This is not NEAR AI and not a TEE. A NEAR AI key would switch that path on. QA is local."],
+          ["3", "Books", "A sponsored guest pays the quote in testnet NEAR. The agent records the hash and settles 70/20/10 on chain. Explorer links are on the receipt. Testnet only."],
         ].map(([step, title, body]) => (
           <div key={step} className="rounded-xl border border-border bg-card/80 p-4">
             <p className="font-mono text-xs text-primary">0{step}</p>

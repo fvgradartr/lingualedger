@@ -145,7 +145,7 @@ function chainOrderToJob(row: ChainOrder): JobOrder {
     status,
     translation: "",
     deliverable: row.deliverable_sha256
-      ? `On-chain receipt only. The source text stays off chain.\n\nsha256 ${row.deliverable_sha256}\nTEE ${row.tee_sig_id || "none"}`
+      ? `On-chain receipt only. The source text stays off chain.\n\nsha256 ${row.deliverable_sha256}\nSignature id ${row.tee_sig_id || "none"}`
       : "Paid on testnet. The deliverable hash is written when the agent records the sale.",
     qaScore: 0,
     qaNotes: ["Read from the treasury contract."],
@@ -177,6 +177,16 @@ function txHash(response: unknown): string {
   return record.transaction?.hash || record.transaction_outcome?.id || "submitted";
 }
 
+function hasFailure(response: unknown): boolean {
+  if (!response || typeof response !== "object") return false;
+  const record = response as {
+    status?: { Failure?: unknown } | string;
+    receipts_outcome?: { outcome?: { status?: { Failure?: unknown } } }[];
+  };
+  if (record.status && typeof record.status === "object" && record.status.Failure) return true;
+  return Boolean(record.receipts_outcome?.some((row) => row.outcome?.status && "Failure" in row.outcome.status));
+}
+
 export async function agentCall(methodName: string, args: Record<string, unknown>, deposit = BigInt("0")): Promise<string | null> {
   const key = process.env.AGENT_FC_PRIVATE_KEY;
   const id = contractId();
@@ -192,5 +202,8 @@ export async function agentCall(methodName: string, args: Record<string, unknown
     gas: BigInt("80000000000000"),
     waitUntil: "EXECUTED",
   });
-  return txHash(response);
+  if (hasFailure(response)) throw new Error(`${methodName} failed on testnet`);
+  const hash = txHash(response);
+  if (!hash || hash === "submitted") throw new Error(`${methodName} did not return a transaction hash`);
+  return hash;
 }

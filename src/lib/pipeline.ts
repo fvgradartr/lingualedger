@@ -13,6 +13,7 @@ import {
 import { addDaySpend, currentDaySpend, isPaused, upsertOrder } from "@/lib/store";
 import { curatedTranslation } from "@/lib/samples";
 import { detectLanguage, looksUntranslated, translateDemo, translateWithFreeMt, translateWithNearAi } from "@/lib/translate";
+import { chainSettleConfigured, settleJob } from "@/lib/settle";
 import type { Channel, GlossaryPair, JobOrder, Lang, QuoteResponse, Tone } from "@/lib/types";
 
 export class LedgerError extends Error {
@@ -76,6 +77,7 @@ export async function buildQuote(text: string, source: Lang, target: Lang): Prom
     daySpendYocto: formatYocto(spent),
     policy,
     detectedLang: detectLanguage(text),
+    chainSettleEnabled: chainSettleConfigured(),
   };
 }
 
@@ -87,11 +89,12 @@ function receiptFooter(order: Omit<JobOrder, "deliverable">): string {
     "## Receipt",
     `Order: ${order.id}`,
     `sha256: ${order.receipt.sha256}`,
-    `TEE signature: ${order.receipt.teeSigId}`,
+    `Signature id: ${order.receipt.teeSigId}`,
     `Model: ${order.receipt.model}`,
     `Mode: ${order.receipt.mode}`,
     `QA: ${order.qaScore}`,
     `Inference cost: ${formatNear(parseYocto(order.receipt.inferenceCostYocto))} NEAR`,
+    order.tx.pay ? `Pay tx: ${order.tx.pay}` : "",
     order.tx.record ? `Record tx: ${order.tx.record}` : "",
     order.tx.settle ? `Settle tx: ${order.tx.settle}` : "",
   ]
@@ -183,19 +186,38 @@ export async function createOrder(input: {
       transferred: false,
     })),
     tx: {
-      pay: `demo:${id}`,
+      pay: null,
       record: null,
       settle: null,
     },
     createdAt: new Date().toISOString(),
+    settledOnChain: false,
   };
 
-  // Demo pay does not move testnet NEAR. Settling a NEAR order on chain
-  // transfers real balance, so that path lives in scripts/smoke-testnet.mjs
-  // after an actual pay_order deposit. Receipts here are local and labeled.
-  order.tx.record = `demo:${id}:record`;
-  order.tx.settle = `demo:${id}:settle`;
-  order.status = "settled";
+  const settled = await settleJob({
+    id,
+    words: quote.words,
+    amountYocto: quote.quoteYocto,
+    sha256,
+    teeSigId,
+    inferenceCostYocto: quote.inferenceCostYocto,
+  });
+  order.tx = { pay: settled.pay, record: settled.record, settle: settled.settle };
+  order.receipt.verificationNote = [order.receipt.verificationNote, settled.note].filter(Boolean).join(" ");
+  if (settled.kind === "chain") {
+    if (settled.payer) order.payer = settled.payer;
+    order.channel = "storefront";
+    order.onChain = Boolean(settled.pay);
+    order.settledOnChain = settled.transferred;
+    for (const line of order.payouts) line.transferred = settled.transferred;
+    if (settled.transferred) order.status = "settled";
+    else if (settled.record) order.status = "delivered";
+    else if (settled.pay) order.status = "paid";
+    else order.status = "delivered";
+  } else {
+    order.status = "settled";
+    order.settledOnChain = false;
+  }
   order.deliverable = receiptFooter(order);
   addDaySpend(inference);
   upsertOrder(order);

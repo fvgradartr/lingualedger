@@ -6,4 +6,4 @@ cd "$(dirname "$0")/.."
 if [[ ! -f contract/target/wasm32-unknown-unknown/release/lingualedger_treasury.wasm ]]; then
   npm run contract:build
 fi
-node scripts/deploy-testnet.mjs "${1:-lingualedger584b.testnet}"
+node scripts/deploy-testnet.mjs "${1:-lingualedger-hq.testnet}"

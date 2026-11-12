@@ -20,7 +20,7 @@
     "build": "next build",
     "start": "next start -p 43123",
     "lint": "eslint",
-    "test": "tsx --test src/lib/pricing.test.ts src/lib/review.test.ts src/lib/market.test.ts src/lib/pipeline.test.ts src/lib/freemt.test.ts",
+    "test": "tsx --test src/lib/pricing.test.ts src/lib/review.test.ts src/lib/market.test.ts src/lib/pipeline.test.ts src/lib/freemt.test.ts src/lib/settle.test.ts",
     "test:contract": "cargo test --manifest-path contract/Cargo.toml --lib",
     "contract:build": "cargo build --manifest-path contract/Cargo.toml --target wasm32-unknown-unknown --release",
     "demo": "tsx scripts/demo.ts",

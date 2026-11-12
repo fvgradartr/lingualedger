@@ -11,6 +11,8 @@ process.env.LINGUALEDGER_DATA = path.join(mkdtempSync(path.join(tmpdir(), "ll-")
 delete process.env.NEAR_AI_API_KEY;
 delete process.env.NEARAI_API_KEY;
 delete process.env.AGENT_FC_PRIVATE_KEY;
+delete process.env.DEMO_PAYER_PRIVATE_KEY;
+delete process.env.DEMO_PAYER_ACCOUNT_ID;
 
 test("demo desk: quote floor, split, kill switch, and untrusted briefs", async () => {
   const { createOrder, LedgerError } = await import("./pipeline.ts");
