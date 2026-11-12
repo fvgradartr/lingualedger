@@ -2,12 +2,12 @@
 
 Repository: https://github.com/fvgradartr/lingualedger
 
-Captured from `npm run dev` at http://127.0.0.1:43123 with headless Chrome.
+Captured from the production build at http://127.0.0.1:43123 with headless Chrome (November 2026 restyle).
 
-- `desk.png` — Turkish sample, 0.05 NEAR, floored badge, price read on testnet.
-- `desk-mobile.png` — the same desk at a 390px width.
-- `receipt.png` — English deliverable, QA 100, sha256, `demo:` signature id, 70/20/10.
-- `ledger.png` — policy from the live treasury `lingualedger-hq.testnet`. The first smoke job still sits on `lingualedger584b.testnet`.
+- `desk.jpg` — Turkish sample, 0.05 NEAR, floored badge, price read on testnet.
+- `desk-mobile.jpg` — the same desk at a 390px width.
+- `receipt.jpg` — settled testnet job `ll-mwd1336h-3238c5`, with the on-chain receipt, SETTLED stamp, and verified pay, record, and settle hashes. Source text stays off chain.
+- `ledger.jpg` — policy from the live treasury `lingualedger-hq.testnet`. The first smoke job still sits on `lingualedger584b.testnet`.
 - `paused.png` — the desk error `LinguaLedger is paused`.
 - `dry-quote.png` — live 1Click dry quote, Solana USDC to 2 USDC on NEAR.
 

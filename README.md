@@ -25,17 +25,14 @@ Hosted on Vercel with no paid API keys. A visitor's own Turkish, English, or Spa
 | Agent Market | Not listed yet. The webhook and poll worker are in the repo. |
 | Video | Not recorded yet. The shot list is `docs/DEMO_SCRIPT.md`. |
 
-Screenshots from a local run of the steps below:
+Screenshots of the current desk:
 
-![Desk, 0.05 NEAR floored](docs/screenshots/desk.png)
+![Desk, 0.05 NEAR floored](docs/screenshots/desk.jpg)
 
-![Receipt](docs/screenshots/receipt.png)
+![Receipt](docs/screenshots/receipt.jpg)
 
-![Ledger](docs/screenshots/ledger.png)
+![Ledger](docs/screenshots/ledger.jpg)
 
-![Paused](docs/screenshots/paused.png)
-
-![Dry 1Click quote](docs/screenshots/dry-quote.png)
 
 ## Try it in 2 minutes
 
